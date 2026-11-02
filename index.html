@@ -6,51 +6,49 @@
   <title>ارسال فایل | کافی‌نت</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', 'Segoe UI', sans-serif; }
-    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
-    .container { background: #fff; border-radius: 16px; padding: 32px; max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-    h1 { text-align: center; color: #333; font-size: 1.5rem; }
-    .subtitle { text-align: center; color: #777; font-size: 0.9rem; margin: 8px 0 24px; }
-    .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
-    .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .drop-zone { border: 2px dashed #c3c3c3; border-radius: 12px; padding: 32px 16px; text-align: center; color: #666; pointer-events: none; }
-    .file-upload-wrapper:hover .drop-zone { border-color: #667eea; background: #f5f6ff; }
-    .drop-zone__icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
-    .file-info { display: flex; align-items: center; justify-content: space-between; background: #f0f4ff; border-radius: 10px; padding: 12px 16px; margin-top: 12px; }
-    .file-details { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: #333; word-break: break-all; }
-    #fileSize { color: #777; font-size: 0.75rem; }
-    .btn-remove { background: #ff4d4f; color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; }
-    .field { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', sans-serif; }
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #667eea; padding: 20px; }
+    .container { background: #fff; border-radius: 16px; padding: 32px; max-width: 480px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    h1 { text-align: center; color: #333; margin-bottom: 20px; font-size: 1.5rem; }
+    
+    /* ظاهر کادر انتخاب فایل */
+    .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 10px; }
+    .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 2; }
+    .drop-zone { border: 2px dashed #c3c3c3; border-radius: 12px; padding: 30px; text-align: center; color: #666; background: #fafafa; }
+    .file-upload-wrapper:hover .drop-zone { border-color: #667eea; background: #f0f4ff; }
+    
+    .file-info { display: flex; align-items: center; justify-content: space-between; background: #e6f9ed; border-radius: 10px; padding: 12px; margin-bottom: 15px; border: 1px solid #1a7f37; }
+    .file-info span { font-size: 0.9rem; color: #1a7f37; word-break: break-all; }
+    .btn-remove { background: #ff4d4f; color: #fff; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; flex-shrink: 0; }
+    
+    .field { margin-top: 15px; display: flex; flex-direction: column; gap: 5px; }
     .field label { font-size: 0.85rem; color: #444; }
-    .field input { padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
-    .field input:focus { border-color: #667eea; }
-    .btn-submit { width: 100%; margin-top: 24px; padding: 12px; background: #667eea; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+    .field input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.9rem; }
+    .field input:focus { border-color: #667eea; outline: none; }
+    
+    .btn-submit { width: 100%; margin-top: 20px; padding: 12px; background: #667eea; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; font-weight: bold; }
     .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
-    .status { margin-top: 20px; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.9rem; }
-    .status.success { background: #e6f9ed; color: #1a7f37; }
-    .status.error { background: #ffecec; color: #c0392b; }
+    
+    .status { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9rem; display: none; }
+    .status.success { background: #e6f9ed; color: #1a7f37; display: block; }
+    .status.error { background: #ffecec; color: #c0392b; display: block; }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>ارسال فایل</h1>
-    <p class="subtitle">فایل عکس، PDF یا ZIP خود را انتخاب کنید</p>
 
     <form id="uploadForm">
       <div class="file-upload-wrapper">
           <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.zip" />
           <div class="drop-zone">
-            <span class="drop-zone__icon">📁</span>
-            <p>فایل را انتخاب کنید</p>
+            <p>برای انتخاب فایل کلیک کنید</p>
           </div>
       </div>
 
       <div id="fileInfo" class="file-info hidden">
-        <div class="file-details">
-          <span id="fileName"></span>
-          <span id="fileSize"></span>
-        </div>
+        <span id="fileNameText"></span>
         <button type="button" id="removeFile" class="btn-remove">✕</button>
       </div>
 
@@ -67,55 +65,57 @@
       <button type="submit" id="submitBtn" class="btn-submit" disabled>ارسال فایل</button>
     </form>
 
-    <div id="statusMessage" class="status hidden"></div>
+    <div id="statusMessage" class="status"></div>
   </div>
 
   <script>
     // ═══════════════════════════════════════════════
-    // 🔴 فقط این دو خط را تغییر دهید
+    // 🔴 این دو مقدار را با اطلاعات خودتان جایگزین کنید
     // ═══════════════════════════════════════════════
     const SUPABASE_URL = 'https://bzkzcyqvnuckbqulhjhp.supabase.co/rest/v1/'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6a3pjeXF2bnVja2JxdWxoamhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MTU1ODgsImV4cCI6MjEwOTE5MTU4OH0.RTOpuuJOiPbp5f-PXmn42ARVkxQH0PtMA8YyAc4PGTI'; 
     
-    // نام باکتی که ساختید
     const BUCKET_NAME = 'customer-uploads';
 
-    // ─── بقیه کد (نیازی به تغییر نیست) ───
+    // ─── متغیرها ───
+    let selectedFile = null;
     const fileInput = document.getElementById('fileInput');
     const fileInfo = document.getElementById('fileInfo');
-    const fileName = document.getElementById('fileName');
-    const fileSize = document.getElementById('fileSize');
+    const fileNameText = document.getElementById('fileNameText');
     const removeFileBtn = document.getElementById('removeFile');
     const form = document.getElementById('uploadForm');
     const submitBtn = document.getElementById('submitBtn');
     const statusMessage = document.getElementById('statusMessage');
 
-    let selectedFile = null;
+    // ─── اتصال به Supabase ───
     let supabaseClient = null;
-
     try {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (error) {
-        console.error('خطا در اتصال به Supabase:', error);
+    } catch (e) {
+        console.error("خطا در اتصال به Supabase");
     }
 
+    // ─── ۱. انتخاب فایل ───
     fileInput.addEventListener('change', function() {
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
+            
+            // چک کردن حجم
             if (file.size > 20 * 1024 * 1024) {
-                showStatus('حجم فایل بیش از ۲۰ مگابایت است.', 'error');
+                showStatus('حجم فایل بیشتر از 20 مگابایت است.', 'error');
                 fileInput.value = '';
                 return;
             }
+
             selectedFile = file;
-            fileName.textContent = file.name;
-            fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            fileNameText.textContent = file.name;
             fileInfo.classList.remove('hidden');
             submitBtn.disabled = false;
             hideStatus();
         }
     });
 
+    // ─── ۲. حذف فایل انتخاب شده ───
     removeFileBtn.addEventListener('click', function(e) {
         e.preventDefault();
         selectedFile = null;
@@ -125,18 +125,10 @@
         hideStatus();
     });
 
-    function showStatus(msg, type) {
-        statusMessage.textContent = msg;
-        statusMessage.className = 'status ' + type;
-    }
-
-    function hideStatus() {
-        statusMessage.className = 'status hidden';
-        statusMessage.textContent = '';
-    }
-
+    // ─── ۳. ارسال به Supabase ───
     form.addEventListener('submit', async function(e) {
-        e.preventDefault();
+        e.preventDefault(); // جلوگیری از رفرش صفحه
+
         if (!selectedFile) {
             showStatus('لطفاً ابتدا یک فایل انتخاب کنید.', 'error');
             return;
@@ -144,6 +136,7 @@
 
         const name = document.getElementById('customerName').value.trim();
         const phone = document.getElementById('customerPhone').value.trim();
+        
         if (!name || !phone) {
             showStatus('لطفاً نام و شماره تماس را وارد کنید.', 'error');
             return;
@@ -153,33 +146,45 @@
         submitBtn.textContent = 'در حال ارسال...';
         hideStatus();
 
-                try {
-            // ۱. استخراج پسوند فایل
-            const fileExt = selectedFile.name.split('.').pop().toLowerCase();
-            
-            // ۲. پاکسازی کامل شماره تلفن از هر کاراکتر غیرعددی
-            const cleanPhone = phone.replace(/\D/g, '');
-            
-            // ۳. ساخت نام فایل استاندارد بدون هیچ فاصله‌ای
-            const uniqueFileName = `${Date.now()}-${cleanPhone}.${fileExt}`;
+        try {
+            // نام فایل را با اعداد تصادفی و بدون هیچ کاراکتر اضافی می‌سازیم
+            const fileExt = selectedFile.name.split('.').pop();
+            const randomNum = Math.floor(Math.random() * 10000);
+            const safeFileName = 'file_' + Date.now() + '_' + randomNum + '.' + fileExt;
 
+            // آپلود
             const { data, error } = await supabaseClient.storage
               .from(BUCKET_NAME)
-              .upload(uniqueFileName, selectedFile, { cacheControl: '3600', upsert: false });
+              .upload(safeFileName, selectedFile, { cacheControl: '3600', upsert: false });
 
             if (error) throw error;
 
+            // موفقیت
             showStatus('فایل با موفقیت ارسال شد ✅', 'success');
             form.reset();
             selectedFile = null;
             fileInfo.classList.add('hidden');
+            
         } catch (err) {
+            // خطا
             console.error('خطای آپلود:', err);
             showStatus('خطا در ارسال: ' + err.message, 'error');
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'ارسال فایل';
         }
+    });
+
+    // ─── توابع کمکی ───
+    function showStatus(msg, type) {
+        statusMessage.textContent = msg;
+        statusMessage.className = 'status ' + type;
+    }
+
+    function hideStatus() {
+        statusMessage.className = 'status';
+        statusMessage.textContent = '';
+    }
   </script>
 </body>
 </html>
