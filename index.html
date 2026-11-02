@@ -168,14 +168,16 @@
         submitBtn.textContent = 'در حال ارسال...';
         hideStatus();
 
-               try {
-            // ۱. استخراج پسوند فایل (مثلاً png یا jpg)
+                       try {
+            // ۱. استخراج پسوند فایل (مثلاً png)
             const fileExt = selectedFile.name.split('.').pop().toLowerCase();
             
-            // ۲. ساخت یک نام فایل کاملاً انگلیسی و ایمن
-            // فقط تاریخ (عدد) + شماره تماس (عدد) + یک پسوند
-            // به هیچ وجه از نام فارسی یا فاصله استفاده نمی‌کنیم
-            const uniqueFileName = Date.now() + '_' + phone + '.' + fileExt;
+            // ۲. پاکسازی شماره تماس از هر کاراکتر غیرعددی (برای اطمینان)
+            const cleanPhone = phone.replace(/\D/g, '');
+            
+            // ۳. ساخت نام فایل نهایی: فقط عدد (زمان) + خط تیره + عدد (شماره) + پسوند
+            // این ساختار هیچ فاصله یا حرف فارسی ندارد و کاملاً برای Supabase امن است
+            const uniqueFileName = `${Date.now()}-${cleanPhone}.${fileExt}`;
 
             const { data, error } = await supabaseClient.storage
               .from(BUCKET_NAME)
@@ -194,7 +196,6 @@
             submitBtn.disabled = false;
             submitBtn.textContent = 'ارسال فایل';
         }
-    });
   </script>
 </body>
 </html>
