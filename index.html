@@ -103,16 +103,22 @@
     submitBtn.textContent = 'در حال ارسال...';
     statusDiv.style.display = 'none';
 
-    try {
-      // 🔥 این مهم‌ترین بخش است: نام فایل را به سادگی هر چه تمام‌تر می‌سازیم
-      // فقط یک عدد + پسوند. هیچ فاصله یا کاراکتر عجیبی در آن نیست.
+        try {
+      // ساخت نام فایل
       const fileExt = selectedFile.name.split('.').pop(); 
       const safeName = 'file_' + Date.now() + '.' + fileExt;
 
-      // آپلود
+      // آپلود همراه با اطلاعات مشتری
       const { data, error } = await supabaseClient.storage
         .from(BUCKET_NAME)
-        .upload(safeName, selectedFile);
+        .upload(safeName, selectedFile, {
+          cacheControl: '3600',
+          upsert: false,
+          metadata: {
+            customer_name: name,
+            customer_phone: phone
+          }
+        });
 
       if (error) throw error;
 
@@ -128,7 +134,6 @@
       submitBtn.disabled = false;
       submitBtn.textContent = 'ارسال فایل';
     }
-  });
 
   function showStatus(msg, type) {
     statusDiv.textContent = msg;
