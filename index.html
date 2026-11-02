@@ -207,14 +207,20 @@
     <div id="statusMessage" class="status hidden"></div>
   </div>
 
-  <script>
+    <script>
     // ═══════════════════════════════════════════════
     // 🔴 تنظیمات Supabase — این دو مقدار را عوض کن
     // ═══════════════════════════════════════════════
-    const SUPABASE_URL = 'https://zkxezdqgpssaaaejmhws.supabase.co/rest/v1/';
+    // حتماً آدرس را با https:// شروع کن و در انتها اسلش (/) نگذار
+    const SUPABASE_URL = 'https://zkxezdqgpssaaaejmhws.supabase.co/rest/v1'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpreGV6ZHFncHNzYWFhZWptaHdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDExNDcsImV4cCI6MjEwOTE3NzE0N30.2K9_BdPgfeOoVCB9PM22Co6Oh8HNdCA3wS5V1JSp8CY
-';
+'; 
     const BUCKET_NAME = 'customer-uploads';
+
+    // بررسی اینکه آیا کلیدها جایگزین شده‌اند یا نه
+    if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_ANON_KEY') {
+        alert('خطا: شما هنوز آدرس و کلید Supabase را در کد جایگذاری نکرده‌اید!');
+    }
 
     // ═══════════════════════════════════════════════
     // بقیه کدها — نیازی به تغییر نیست
@@ -225,7 +231,14 @@
       'application/pdf', 'application/zip', 'application/x-zip-compressed'
     ];
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // اتصال به Supabase
+    let supabaseClient;
+    try {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (error) {
+        console.error('خطا در اتصال به Supabase:', error);
+        alert('خطا در اتصال به Supabase. کلیدها را بررسی کنید.');
+    }
 
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
@@ -239,7 +252,10 @@
 
     let selectedFile = null;
 
-    dropZone.addEventListener('click', () => fileInput.click());
+    // ─── رویدادهای کلیک و درگ و دراپ ───
+    dropZone.addEventListener('click', () => {
+        fileInput.click();
+    });
 
     dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -251,13 +267,18 @@
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+      if (e.dataTransfer.files.length) {
+          handleFile(e.dataTransfer.files[0]);
+      }
     });
 
     fileInput.addEventListener('change', () => {
-      if (fileInput.files.length) handleFile(fileInput.files[0]);
+      if (fileInput.files.length) {
+          handleFile(fileInput.files[0]);
+      }
     });
 
+    // ─── پردازش فایل ───
     function handleFile(file) {
       if (!ALLOWED_TYPES.includes(file.type)) {
         showStatus('فرمت فایل مجاز نیست. فقط عکس، PDF یا ZIP.', 'error');
@@ -267,6 +288,7 @@
         showStatus('حجم فایل بیش از ۲۰ مگابایت است.', 'error');
         return;
       }
+      
       selectedFile = file;
       fileName.textContent = file.name;
       fileSize.textContent = formatSize(file.size);
@@ -286,6 +308,7 @@
       fileInput.value = '';
       fileInfo.classList.add('hidden');
       submitBtn.disabled = true;
+      hideStatus();
     });
 
     function showStatus(msg, type) {
@@ -298,12 +321,14 @@
       statusMessage.textContent = '';
     }
 
+    // ─── ارسال به Supabase ───
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!selectedFile) return;
 
       const name = document.getElementById('customerName').value.trim();
       const phone = document.getElementById('customerPhone').value.trim();
+      
       if (!name || !phone) {
         showStatus('لطفاً نام و شماره تماس را وارد کنید.', 'error');
         return;
@@ -315,7 +340,9 @@
 
       try {
         const fileExt = selectedFile.name.split('.').pop();
-        const uniqueFileName = `${Date.now()}_${phone}_${name.replace(/\s+/g, '-')}.${fileExt}`;
+        // حذف فاصله‌ها و کاراکترهای غیرمجاز از نام فایل
+        const safeName = name.replace(/[^a-zA-Z0-9آ-ی]/g, '-'); 
+        const uniqueFileName = `${Date.now()}_${phone}_${safeName}.${fileExt}`;
 
         const { data, error } = await supabaseClient.storage
           .from(BUCKET_NAME)
@@ -331,13 +358,14 @@
         selectedFile = null;
         fileInfo.classList.add('hidden');
       } catch (err) {
-        console.error(err);
-        showStatus('خطا در ارسال فایل. دوباره تلاش کنید.', 'error');
+        console.error('خطای آپلود:', err);
+        showStatus('خطا در ارسال فایل. (اطلاعات بیشتر در Console مرورگر)', 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'ارسال فایل';
       }
     });
   </script>
+  
 </body>
 </html>
