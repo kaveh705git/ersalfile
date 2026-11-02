@@ -146,7 +146,7 @@
             const fileExt = selectedFile.name.split('.').pop().toLowerCase();
             
             // تبدیل نام فارسی به انگلیسی/حروف مجاز برای اینکه Supabase خطا نده
-            let safeName = name.replace(/[^a-zA-Z0-9]/g, '-'); 
+            let safeName = name.replace(/\s+/g, '-').replace(/[^\u0600-\u06FFa-zA-Z0-9\-]/g, ''); 
             if (safeName === '' || safeName === '-') safeName = 'Customer';
             
             const cleanPhone = phone.replace(/\D/g, ''); // فقط اعداد شماره
