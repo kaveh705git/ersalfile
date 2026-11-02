@@ -168,10 +168,14 @@
         submitBtn.textContent = 'در حال ارسال...';
         hideStatus();
 
-        try {
-            const fileExt = selectedFile.name.split('.').pop();
-            const safeName = name.replace(/[^a-zA-Z0-9آ-ی]/g, '-'); 
-            const uniqueFileName = Date.now() + '_' + phone + '_' + safeName + '.' + fileExt;
+               try {
+            // ۱. استخراج پسوند فایل (مثلاً png یا jpg)
+            const fileExt = selectedFile.name.split('.').pop().toLowerCase();
+            
+            // ۲. ساخت یک نام فایل کاملاً انگلیسی و ایمن
+            // فقط تاریخ (عدد) + شماره تماس (عدد) + یک پسوند
+            // به هیچ وجه از نام فارسی یا فاصله استفاده نمی‌کنیم
+            const uniqueFileName = Date.now() + '_' + phone + '.' + fileExt;
 
             const { data, error } = await supabaseClient.storage
               .from(BUCKET_NAME)
