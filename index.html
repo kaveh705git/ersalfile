@@ -12,11 +12,9 @@
     h1 { text-align: center; color: #333; font-size: 1.5rem; }
     .subtitle { text-align: center; color: #777; font-size: 0.9rem; margin: 8px 0 24px; }
     
-    /* ظاهر جدید برای انتخاب فایل */
+    /* ظاهر کادر انتخاب فایل */
     .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
-    .file-upload-wrapper input[type=file] {
-        font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
+    .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
     .drop-zone { border: 2px dashed #c3c3c3; border-radius: 12px; padding: 32px 16px; text-align: center; color: #666; pointer-events: none; }
     .file-upload-wrapper:hover .drop-zone { border-color: #667eea; background: #f5f6ff; }
     .drop-zone__icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
@@ -29,7 +27,7 @@
     .field label { font-size: 0.85rem; color: #444; }
     .field input { padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
     .field input:focus { border-color: #667eea; }
-    .btn-submit { width: 100%; margin-top: 24px; padding: 12px; background: #667eea; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
+    .btn-submit { width: 100%; margin-top: 24px; padding: 12px; background: #667eea; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; transition: 0.2s; }
     .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
     .status { margin-top: 20px; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.9rem; }
     .status.success { background: #e6f9ed; color: #1a7f37; }
@@ -44,7 +42,7 @@
 
     <form id="uploadForm">
       
-      <!-- ترفند جدید: input کاملا رویت‌پذیر است اما شفاف است و روی کادر ما قرار گرفته -->
+      <!-- کادر انتخاب فایل -->
       <div class="file-upload-wrapper">
           <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.zip" />
           <div class="drop-zone">
@@ -53,6 +51,7 @@
           </div>
       </div>
 
+      <!-- کادر نمایش اطلاعات فایل -->
       <div id="fileInfo" class="file-info hidden">
         <div class="file-details">
           <span id="fileName"></span>
@@ -79,12 +78,13 @@
 
   <script>
     // ═══════════════════════════════════════════════
-    // 🔴 تنظیمات Supabase — این دو مقدار را عوض کن
+    // 🔴 تنظیمات Supabase
     // ═══════════════════════════════════════════════
     const SUPABASE_URL = 'https://zkxezdqgpssaaaejmhws.supabase.co/rest/v1'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpreGV6ZHFncHNzYWFhZWptaHdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDExNDcsImV4cCI6MjEwOTE3NzE0N30.2K9_BdPgfeOoVCB9PM22Co6Oh8HNdCA3wS5V1JSp8CY'; 
     const BUCKET_NAME = 'customer-uploads';
 
+    // ─── پیدا کردن المان‌های HTML ───
     const fileInput = document.getElementById('fileInput');
     const fileInfo = document.getElementById('fileInfo');
     const fileName = document.getElementById('fileName');
@@ -97,37 +97,37 @@
     let selectedFile = null;
     let supabaseClient = null;
 
+    // ─── اتصال به Supabase ───
     try {
-       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: {
-        fetch: (url, options) => {
-            // اجبار به استفاده از HTTP/1.1 برای جلوگیری از خطای پروتکل
-            return fetch(url, { ...options, http2: false });
-        }
-    }
-});
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (error) {
-        console.error('خطا در اتصال:', error);
+        console.error('خطا در اتصال به Supabase:', error);
     }
 
-    // تغییر فایل
+    // ─── ۱. رویداد انتخاب فایل ───
     fileInput.addEventListener('change', function() {
-        if (fileInput.files.length) {
+        console.log("فایل انتخاب شد!");
+        if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
+            
+            // بررسی حجم (حداکثر ۲۰ مگابایت)
             if (file.size > 20 * 1024 * 1024) {
                 showStatus('حجم فایل بیش از ۲۰ مگابایت است.', 'error');
-                fileInput.value = '';
+                fileInput.value = ''; // پاک کردن فایل
                 return;
             }
+
+            // ذخیره و نمایش فایل
             selectedFile = file;
             fileName.textContent = file.name;
             fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-            fileInfo.classList.remove('hidden');
-            submitBtn.disabled = false;
+            fileInfo.classList.remove('hidden'); // نمایش کادر
+            submitBtn.disabled = false;          // فعال کردن دکمه ارسال
             hideStatus();
         }
     });
 
+    // ─── ۲. رویداد حذف فایل ───
     removeFileBtn.addEventListener('click', function(e) {
         e.preventDefault();
         selectedFile = null;
@@ -137,6 +137,7 @@
         hideStatus();
     });
 
+    // ─── توابع کمکی نمایش وضعیت ───
     function showStatus(msg, type) {
         statusMessage.textContent = msg;
         statusMessage.className = 'status ' + type;
@@ -147,7 +148,7 @@
         statusMessage.textContent = '';
     }
 
-    // ارسال
+    // ─── ۳. رویداد ارسال فرم ───
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -168,17 +169,13 @@
         submitBtn.textContent = 'در حال ارسال...';
         hideStatus();
 
-                       try {
-            // ۱. استخراج پسوند فایل (مثلاً png)
+        try {
+            // ساخت نام فایل ایمن (فقط عدد و حروف انگلیسی)
             const fileExt = selectedFile.name.split('.').pop().toLowerCase();
-            
-            // ۲. پاکسازی شماره تماس از هر کاراکتر غیرعددی (برای اطمینان)
             const cleanPhone = phone.replace(/\D/g, '');
-            
-            // ۳. ساخت نام فایل نهایی: فقط عدد (زمان) + خط تیره + عدد (شماره) + پسوند
-            // این ساختار هیچ فاصله یا حرف فارسی ندارد و کاملاً برای Supabase امن است
-            const uniqueFileName = `${Date.now()}-${cleanPhone}.${fileExt}`;
+            const uniqueFileName = Date.now() + '-' + cleanPhone + '.' + fileExt;
 
+            // آپلود به Supabase
             const { data, error } = await supabaseClient.storage
               .from(BUCKET_NAME)
               .upload(uniqueFileName, selectedFile, { cacheControl: '3600', upsert: false });
@@ -196,6 +193,7 @@
             submitBtn.disabled = false;
             submitBtn.textContent = 'ارسال فایل';
         }
+    });
   </script>
 </body>
 </html>
