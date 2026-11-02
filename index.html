@@ -3,144 +3,195 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ارسال فایل</title>
+  <title>ارسال فایل | کافی‌نت</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: Tahoma, sans-serif; background: #f0f4ff; display: flex; justify-content: center; padding: 20px; }
-    .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-    h2 { text-align: center; color: #333; }
-    .file-box { border: 2px dashed #aaa; padding: 30px; text-align: center; border-radius: 8px; position: relative; margin-bottom: 15px; cursor: pointer; }
-    .file-box input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-    .input-group { margin-bottom: 15px; }
-    .input-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #555; }
-    .input-group input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-    button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
-    button:disabled { background: #ccc; }
-    #status { text-align: center; margin-top: 15px; font-size: 14px; display: none; padding: 10px; border-radius: 5px; }
-    .success { background: #e6f9ed; color: #1a7f37; }
-    .error { background: #ffecec; color: #c0392b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', 'Segoe UI', sans-serif; }
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+    .container { background: #fff; border-radius: 16px; padding: 32px; max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    h1 { text-align: center; color: #333; font-size: 1.5rem; margin-bottom: 20px; }
+    
+    .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 10px; }
+    .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 2; }
+    .drop-zone { border: 2px dashed #c3c3c3; border-radius: 12px; padding: 30px; text-align: center; color: #666; background: #fafafa; }
+    .file-upload-wrapper:hover .drop-zone { border-color: #667eea; background: #f0f4ff; }
+    
+    .file-info { display: flex; align-items: center; justify-content: space-between; background: #f0f4ff; border-radius: 10px; padding: 12px; margin-bottom: 15px; }
+    .file-info span { font-size: 0.9rem; color: #333; word-break: break-all; }
+    .btn-remove { background: #ff4d4f; color: #fff; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; flex-shrink: 0; }
+    
+    .field { margin-top: 15px; display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 0.85rem; color: #444; }
+    .field input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.9rem; }
+    .field input:focus { border-color: #667eea; outline: none; }
+    
+    .btn-submit { width: 100%; margin-top: 20px; padding: 12px; background: #667eea; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+    
+    .status { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9rem; display: none; }
+    .status.success { background: #e6f9ed; color: #1a7f37; display: block; }
+    .status.error { background: #ffecec; color: #c0392b; display: block; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>ارسال فایل</h1>
 
-<div class="container">
-  <h2>ارسال فایل</h2>
+    <form id="uploadForm">
+      <div class="file-upload-wrapper">
+          <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.zip" />
+          <div class="drop-zone">
+            <p>برای انتخاب فایل کلیک کنید</p>
+          </div>
+      </div>
 
-  <form id="uploadForm">
-    <div class="file-box">
-      <p>برای انتخاب فایل کلیک کنید</p>
-      <input type="file" id="fileInput" />
-    </div>
+      <div id="fileInfo" class="file-info hidden">
+        <span id="fileNameText"></span>
+        <button type="button" id="removeFile" class="btn-remove">✕</button>
+      </div>
 
-    <div id="fileInfo" style="display: none; background: #f9f9f9; padding: 10px; margin-bottom: 15px; border-radius: 5px; font-size: 14px;">
-      فایل انتخاب شده: <span id="fileNameText"></span>
-    </div>
+      <div class="field">
+        <label for="customerName">نام شما</label>
+        <input type="text" id="customerName" placeholder="نام و نام خانوادگی" required />
+      </div>
 
-    <div class="input-group">
-      <label>نام شما</label>
-      <input type="text" id="customerName" placeholder="نام خود را وارد کنید" required />
-    </div>
+      <div class="field">
+        <label for="customerPhone">شماره تماس</label>
+        <input type="tel" id="customerPhone" placeholder="۰۹۱۲..." required />
+      </div>
 
-    <div class="input-group">
-      <label>شماره تماس</label>
-      <input type="text" id="customerPhone" placeholder="شماره تماس" required />
-    </div>
+      <button type="submit" id="submitBtn" class="btn-submit" disabled>ارسال فایل</button>
+    </form>
 
-    <button type="submit" id="submitBtn" disabled>ارسال فایل</button>
-  </form>
+    <div id="statusMessage" class="status"></div>
+  </div>
 
-  <div id="status"></div>
-</div>
+  <script>
+    // ═══════════════════════════════════════════════
+    // 🔴 فقط این دو مقدار را با اطلاعات خودتان جایگزین کنید
+    // ═══════════════════════════════════════════════
+    const SUPABASE_URL = 'https://bzkzcyqvnuckbqulhjhp.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6a3pjeXF2bnVja2JxdWxoamhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MTU1ODgsImV4cCI6MjEwOTE5MTU4OH0.RTOpuuJOiPbp5f-PXmn42ARVkxQH0PtMA8YyAc4PGTI'; 
+    
+    const BUCKET_NAME = 'customer-uploads';
 
-<script>
-  // ═══════════════════════════════════════════════
-  // 🔴 فقط این دو خط را تغییر دهید
-  // ═══════════════════════════════════════════════
-  const SUPABASE_URL = 'https://bzkzcyqvnuckbqulhjhp.supabase.co'; 
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6a3pjeXF2bnVja2JxdWxoamhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MTU1ODgsImV4cCI6MjEwOTE5MTU4OH0.RTOpuuJOiPbp5f-PXmn42ARVkxQH0PtMA8YyAc4PGTI'; 
-  
-  const BUCKET_NAME = 'customer-uploads';
+    // ─── متغیرها ───
+    let selectedFile = null;
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileNameText = document.getElementById('fileNameText');
+    const removeFileBtn = document.getElementById('removeFile');
+    const form = document.getElementById('uploadForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMessage = document.getElementById('statusMessage');
 
-  // راه‌اندازی Supabase
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // المان‌ها
-  const fileInput = document.getElementById('fileInput');
-  const fileInfo = document.getElementById('fileInfo');
-  const fileNameText = document.getElementById('fileNameText');
-  const submitBtn = document.getElementById('submitBtn');
-  const uploadForm = document.getElementById('uploadForm');
-  const statusDiv = document.getElementById('status');
-  
-  let selectedFile = null;
-
-  // ۱. انتخاب فایل
-  fileInput.addEventListener('change', function() {
-    if (this.files && this.files.length > 0) {
-      selectedFile = this.files[0];
-      fileNameText.textContent = selectedFile.name;
-      fileInfo.style.display = 'block';
-      submitBtn.disabled = false;
-      statusDiv.style.display = 'none';
-    }
-  });
-
-  // ۲. ارسال
-  uploadForm.addEventListener('submit', async function(e) {
-    e.preventDefault(); // جلوگیری از رفرش صفحه
-
-    if (!selectedFile) return;
-
-    const name = document.getElementById('customerName').value;
-    const phone = document.getElementById('customerPhone').value;
-
-    if (!name || !phone) {
-      showStatus('لطفاً نام و شماره را وارد کنید.', 'error');
-      return;
+    // ─── اتصال به Supabase ───
+    let supabaseClient = null;
+    try {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+        console.error("خطا در اتصال به Supabase");
     }
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'در حال ارسال...';
-    statusDiv.style.display = 'none';
+    // ─── ۱. انتخاب فایل ───
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            
+            if (file.size > 20 * 1024 * 1024) {
+                showStatus('حجم فایل بیشتر از 20 مگابایت است.', 'error');
+                fileInput.value = '';
+                return;
+            }
+
+            selectedFile = file;
+            fileNameText.textContent = file.name;
+            fileInfo.classList.remove('hidden');
+            submitBtn.disabled = false;
+            hideStatus();
+        }
+    });
+
+    // ─── ۲. حذف فایل ───
+    removeFileBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        selectedFile = null;
+        fileInput.value = '';
+        fileInfo.classList.add('hidden');
+        submitBtn.disabled = true;
+        hideStatus();
+    });
+
+    // ─── ۳. ارسال ───
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (!selectedFile) return;
+
+        const name = document.getElementById('customerName').value.trim();
+        const phone = document.getElementById('customerPhone').value.trim();
+        
+        if (!name || !phone) {
+            showStatus('لطفاً نام و شماره تماس را وارد کنید.', 'error');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'در حال ارسال...';
+        hideStatus();
 
         try {
-      // ساخت نام فایل
-      const fileExt = selectedFile.name.split('.').pop(); 
-      const safeName = 'file_' + Date.now() + '.' + fileExt;
+            // 🔥 ساخت نام فایل زیبا و استاندارد (حذف حروف فارسی و فاصله‌ها)
+            const fileExt = selectedFile.name.split('.').pop().toLowerCase();
+            
+            // تبدیل نام فارسی به انگلیسی/حروف مجاز برای اینکه Supabase خطا نده
+            let safeName = name.replace(/[^a-zA-Z0-9]/g, '-'); 
+            if (safeName === '' || safeName === '-') safeName = 'Customer';
+            
+            const cleanPhone = phone.replace(/\D/g, ''); // فقط اعداد شماره
+            
+            // خروجی نهایی: Kaveh_09182716632_169876543210.jpg
+            const uniqueFileName = safeName + '_' + cleanPhone + '_' + Date.now() + '.' + fileExt;
 
-      // آپلود همراه با اطلاعات مشتری
-      const { data, error } = await supabaseClient.storage
-        .from(BUCKET_NAME)
-        .upload(safeName, selectedFile, {
-          cacheControl: '3600',
-          upsert: false,
-          metadata: {
-            customer_name: name,
-            customer_phone: phone
-          }
-        });
+            // آپلود با متادیتا
+            const { data, error } = await supabaseClient.storage
+              .from(BUCKET_NAME)
+              .upload(uniqueFileName, selectedFile, {
+                cacheControl: '3600',
+                upsert: false,
+                metadata: {
+                    customer_name: name,
+                    customer_phone: phone
+                }
+              });
 
-      if (error) throw error;
+            if (error) throw error;
 
-      showStatus('فایل با موفقیت ارسال شد ✅', 'success');
-      uploadForm.reset();
-      fileInfo.style.display = 'none';
-      selectedFile = null;
+            showStatus('فایل با موفقیت ارسال شد ✅', 'success');
+            form.reset();
+            selectedFile = null;
+            fileInfo.classList.add('hidden');
+            
+        } catch (err) {
+            console.error(err);
+            showStatus('خطا در ارسال: ' + err.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'ارسال فایل';
+        }
+    });
 
-    } catch (err) {
-      console.error(err);
-      showStatus('خطا در ارسال: ' + err.message, 'error');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'ارسال فایل';
+    // ─── توابع کمکی ───
+    function showStatus(msg, type) {
+        statusMessage.textContent = msg;
+        statusMessage.className = 'status ' + type;
     }
 
-  function showStatus(msg, type) {
-    statusDiv.textContent = msg;
-    statusDiv.className = type;
-    statusDiv.style.display = 'block';
-  }
-</script>
-
+    function hideStatus() {
+        statusMessage.className = 'status';
+        statusMessage.textContent = '';
+    }
+  </script>
 </body>
 </html>
