@@ -153,13 +153,16 @@
         submitBtn.textContent = 'در حال ارسال...';
         hideStatus();
 
-        try {
-            // ساخت نام فایل ایمن (فقط عدد و حروف انگلیسی)
+                try {
+            // ۱. استخراج پسوند فایل
             const fileExt = selectedFile.name.split('.').pop().toLowerCase();
+            
+            // ۲. پاکسازی کامل شماره تلفن از هر کاراکتر غیرعددی
             const cleanPhone = phone.replace(/\D/g, '');
-            const uniqueFileName = Date.now() + '-' + cleanPhone + '.' + fileExt;
+            
+            // ۳. ساخت نام فایل استاندارد بدون هیچ فاصله‌ای
+            const uniqueFileName = `${Date.now()}-${cleanPhone}.${fileExt}`;
 
-            // آپلود به Supabase
             const { data, error } = await supabaseClient.storage
               .from(BUCKET_NAME)
               .upload(uniqueFileName, selectedFile, { cacheControl: '3600', upsert: false });
@@ -172,13 +175,11 @@
             fileInfo.classList.add('hidden');
         } catch (err) {
             console.error('خطای آپلود:', err);
-            // نمایش خطای دقیق‌تر برای دیباگ
-            showStatus('خطا در ارسال: ' + (err.message || JSON.stringify(err)), 'error');
+            showStatus('خطا در ارسال: ' + err.message, 'error');
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'ارسال فایل';
         }
-    });
   </script>
 </body>
 </html>
