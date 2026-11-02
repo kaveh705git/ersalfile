@@ -98,7 +98,14 @@
     let supabaseClient = null;
 
     try {
-        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: {
+        fetch: (url, options) => {
+            // اجبار به استفاده از HTTP/1.1 برای جلوگیری از خطای پروتکل
+            return fetch(url, { ...options, http2: false });
+        }
+    }
+});
     } catch (error) {
         console.error('خطا در اتصال:', error);
     }
