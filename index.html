@@ -3,46 +3,127 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>( خدمات اینترنتی آنلاین کاوه )</title>
+  <title>خدمات اینترنتی آنلاین کاوه</title>
+  
+  <!-- لود فونت زیبای وزیرمتن -->
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', 'Segoe UI', sans-serif; }
-    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
-    .container { background: #fff; border-radius: 16px; padding: 32px; max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-    h1 { text-align: center; color: #333; font-size: 1.5rem; margin-bottom: 20px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Vazirmatn', Tahoma, sans-serif; }
     
-    .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 10px; }
+    body { 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column;
+      align-items: center; 
+      background: #eef2f6; 
+      padding: 20px; 
+    }
+
+    /* ─── استایل هدر (سربرگ) ─── */
+    .header {
+      background: linear-gradient(135deg, #4c51bf 0%, #667eea 100%);
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      border-radius: 16px 16px 0 0;
+      text-align: center;
+      color: white;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+    }
+    .header h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: 0.5px; }
+    .header p { font-size: 0.8rem; opacity: 0.8; margin-top: 5px; }
+
+    /* ─── استایل کادر اصلی ─── */
+    .container { 
+      background: #fff; 
+      border-radius: 0 0 16px 16px; 
+      padding: 25px; 
+      max-width: 500px; 
+      width: 100%; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+    }
+    
+    /* ─── کادر انتخاب فایل ─── */
+    .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 15px; }
     .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 2; }
-    .drop-zone { border: 2px dashed #c3c3c3; border-radius: 12px; padding: 30px; text-align: center; color: #666; background: #fafafa; }
-    .file-upload-wrapper:hover .drop-zone { border-color: #667eea; background: #f0f4ff; }
+    .drop-zone { 
+      border: 2px dashed #a0aec0; 
+      border-radius: 12px; 
+      padding: 35px 20px; 
+      text-align: center; 
+      color: #4a5568; 
+      background: #f7fafc; 
+      transition: all 0.3s ease;
+    }
+    .file-upload-wrapper:hover .drop-zone { border-color: #667eea; background: #ebf4ff; color: #667eea; }
+    .drop-zone svg { width: 40px; height: 40px; margin-bottom: 10px; fill: currentColor; }
     
-    .file-info { display: flex; align-items: center; justify-content: space-between; background: #f0f4ff; border-radius: 10px; padding: 12px; margin-bottom: 15px; }
-    .file-info span { font-size: 0.9rem; color: #333; word-break: break-all; }
-    .btn-remove { background: #ff4d4f; color: #fff; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; flex-shrink: 0; }
+    /* ─── اطلاعات فایل انتخاب شده ─── */
+    .file-info { display: flex; align-items: center; justify-content: space-between; background: #ebf8ff; border: 1px solid #90cdf4; border-radius: 10px; padding: 12px 15px; margin-bottom: 15px; }
+    .file-info span { font-size: 0.85rem; color: #2b6cb0; word-break: break-all; font-weight: 500; }
+    .btn-remove { background: #fc8181; color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.2s; }
+    .btn-remove:hover { background: #f56565; }
     
-    .field { margin-top: 15px; display: flex; flex-direction: column; gap: 5px; }
-    .field label { font-size: 0.85rem; color: #444; }
-    .field input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.9rem; }
-    .field input:focus { border-color: #667eea; outline: none; }
+    /* ─── فیلدهای فرم ─── */
+    .field { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+    .field label { font-size: 0.85rem; color: #4a5568; font-weight: 500; }
+    .field input { 
+      padding: 12px; 
+      border: 1px solid #cbd5e0; 
+      border-radius: 10px; 
+      font-size: 0.95rem; 
+      font-family: inherit;
+      transition: all 0.2s;
+      background: #f7fafc;
+    }
+    .field input:focus { border-color: #667eea; outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); }
     
-    .btn-submit { width: 100%; margin-top: 20px; padding: 12px; background: #667eea; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: 0.2s; }
-    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+    /* ─── دکمه ارسال ─── */
+    .btn-submit { 
+      width: 100%; 
+      margin-top: 25px; 
+      padding: 14px; 
+      background: #667eea; 
+      color: #fff; 
+      border: none; 
+      border-radius: 10px; 
+      font-size: 1rem; 
+      cursor: pointer; 
+      font-weight: bold; 
+      font-family: inherit;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-submit:hover:not(:disabled) { background: #5a67d8; }
+    .btn-submit:active:not(:disabled) { transform: scale(0.98); }
+    .btn-submit:disabled { background: #cbd5e0; cursor: not-allowed; color: #a0aec0; }
     
-    .status { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9rem; display: none; }
-    .status.success { background: #e6f9ed; color: #1a7f37; display: block; }
-    .status.error { background: #ffecec; color: #c0392b; display: block; }
+    /* ─── پیام‌های وضعیت ─── */
+    .status { margin-top: 15px; padding: 12px; border-radius: 10px; text-align: center; font-size: 0.85rem; display: none; font-weight: 500; }
+    .status.success { background: #c6f6d5; color: #276749; display: block; border: 1px solid #9ae6b4; }
+    .status.error { background: #fed7d7; color: #9b2c2c; display: block; border: 1px solid #feb2b2; }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>ارسال فایل</h1>
 
+  <!-- سربرگ سایت -->
+  <div class="header">
+    <h1>خدمات اینترنتی آنلاین کاوه</h1>
+    <p>ارسال امن و سریع فایل</p>
+  </div>
+
+  <!-- کادر اصلی -->
+  <div class="container">
     <form id="uploadForm">
+      
       <div class="file-upload-wrapper">
           <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.zip" />
           <div class="drop-zone">
-            <p>برای انتخاب فایل کلیک کنید</p>
+            <!-- آیکون قشنگ برای انتخاب فایل -->
+            <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            <p>برای انتخاب فایل کلیک کنید یا آن را اینجا رها کنید</p>
           </div>
       </div>
 
@@ -52,13 +133,13 @@
       </div>
 
       <div class="field">
-        <label for="customerName">نام شما</label>
-        <input type="text" id="customerName" placeholder="نام و نام خانوادگی" required />
+        <label for="customerName">نام و نام خانوادگی</label>
+        <input type="text" id="customerName" placeholder="مثلاً: کاوه عبدی" required />
       </div>
 
       <div class="field">
         <label for="customerPhone">شماره تماس</label>
-        <input type="tel" id="customerPhone" placeholder="۰۹۱۲..." required />
+        <input type="tel" id="customerPhone" placeholder="مثلاً: 09123456789" required />
       </div>
 
       <button type="submit" id="submitBtn" class="btn-submit" disabled>ارسال فایل</button>
@@ -142,19 +223,16 @@
         hideStatus();
 
         try {
-            // 🔥 ساخت نام فایل زیبا و استاندارد (حذف حروف فارسی و فاصله‌ها)
             const fileExt = selectedFile.name.split('.').pop().toLowerCase();
             
-            // تبدیل نام به انگلیسی و حذف حروف فارسی برای جلوگیری از خطای Supabase
+            // تمیز کردن نام برای Supabase (فقط حروف انگلیسی و اعداد)
             let safeName = name.replace(/[^a-zA-Z0-9]/g, ''); 
             if (safeName === '') safeName = 'Customer';
             
-            const cleanPhone = phone.replace(/\D/g, ''); // فقط اعداد شماره
-            
-            // خروجی نهایی: Kaveh_09182716632_169876543210.jpg
+            const cleanPhone = phone.replace(/\D/g, ''); 
             const uniqueFileName = safeName + '_' + cleanPhone + '_' + Date.now() + '.' + fileExt;
 
-            // آپلود با متادیتا
+            // آپلود با متادیتا (ذخیره نام و شماره واقعی مشتری)
             const { data, error } = await supabaseClient.storage
               .from(BUCKET_NAME)
               .upload(uniqueFileName, selectedFile, {
